@@ -39,6 +39,36 @@ export interface ValidationResult {
 }
 
 /**
+ * Validates a project URL
+ */
+export function validateProjectUrl(url: string): boolean {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Validates an ISO date string
+ */
+export function validateISODate(dateString: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    return false;
+  }
+
+  const date = new Date(dateString);
+  const now = new Date();
+
+  // Check if date is valid and not in the future
+  return date instanceof Date &&
+    !isNaN(date.getTime()) &&
+    date <= now &&
+    date.toISOString().slice(0, 10) === dateString;
+}
+
+/**
  * Validates a single project object
  */
 export function validateProject(project: unknown): ValidationResult {
@@ -132,6 +162,70 @@ export function validateProject(project: unknown): ValidationResult {
         value: lat
       });
     }
+  }
+
+  // Validate optional URL
+  if (proj.url !== undefined) {
+    if (typeof proj.url !== 'string' || !validateProjectUrl(proj.url)) {
+      errors.push({
+        field: 'url',
+        message: 'URL must be a valid HTTPS URL',
+        value: proj.url
+      });
+    }
+  }
+
+  // Validate verified flag and related fields
+  if (proj.verified !== undefined) {
+    if (typeof proj.verified !== 'boolean') {
+      errors.push({
+        field: 'verified',
+        message: 'Verified must be a boolean',
+        value: proj.verified
+      });
+    } else if (proj.verified === true) {
+      // If verified is true, require url, source, and dateVerified
+      if (!proj.url) {
+        errors.push({
+          field: 'url',
+          message: 'URL is required when verified is true'
+        });
+      }
+
+      if (!proj.source || typeof proj.source !== 'string' || proj.source.trim().length === 0) {
+        errors.push({
+          field: 'source',
+          message: 'Source is required when verified is true',
+          value: proj.source
+        });
+      }
+
+      if (!proj.dateVerified || typeof proj.dateVerified !== 'string' || !validateISODate(proj.dateVerified)) {
+        errors.push({
+          field: 'dateVerified',
+          message: 'Valid ISO date (YYYY-MM-DD) is required when verified is true',
+          value: proj.dateVerified
+        });
+      }
+    }
+  }
+
+  // Validate optional source
+  if (proj.source !== undefined && (typeof proj.source !== 'string' || proj.source.trim().length === 0)) {
+    errors.push({
+      field: 'source',
+      message: 'Source must be a non-empty string when provided',
+      value: proj.source
+    });
+  }
+
+  // Validate optional dateVerified
+  if (proj.dateVerified !== undefined && (typeof proj.dateVerified !== 'string' || !validateISODate(proj.dateVerified))) {
+    errors.push({
+      field: 'dateVerified',
+      message: 'Date verified must be a valid ISO date (YYYY-MM-DD) when provided',
+      value: proj.dateVerified
+    });
   }
 
   return {
