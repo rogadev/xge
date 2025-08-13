@@ -15,6 +15,10 @@ export interface Project {
   | 'waste-management';
   region: 'north-america'; // All projects are Canadian
   coordinates: [number, number]; // [longitude, latitude]
+  url?: string; // HTTPS external reference
+  verified?: boolean; // True if vetted
+  source?: string; // Organization or program name
+  dateVerified?: string; // ISO date (YYYY-MM-DD)
 }
 
 export interface MapState {
