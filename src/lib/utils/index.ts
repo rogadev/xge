@@ -1,5 +1,6 @@
 /**
- * Barrel export for all utility modules
+ * Utility functions for the XGE Climate Explorer
  */
 
-export * from './env.js';
+export * from './validation.js';
+export * from './errors.js';

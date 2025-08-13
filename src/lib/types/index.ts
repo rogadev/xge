@@ -13,7 +13,7 @@ export interface Project {
   | 'conservation'
   | 'sustainable-agriculture'
   | 'waste-management';
-  region: 'north-america' | 'europe' | 'asia' | 'africa' | 'south-america' | 'oceania';
+  region: 'north-america'; // All projects are Canadian
   coordinates: [number, number]; // [longitude, latitude]
 }
 
