@@ -29,3 +29,8 @@ export {
   withErrorHandling,
   withSyncErrorHandling
 } from './errors.js';
+
+// Re-export general helper utilities
+export {
+  debounce
+} from './helpers.js';
