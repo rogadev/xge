@@ -1,9 +1,11 @@
 /**
- * Barrel export for all Svelte stores
+ * Store exports for state management
  */
 
-// Store exports will be added as stores are implemented
-// export * from './map.js';
-// export * from './projects.js';
-// export * from './selectedProject.js';
-// export * from './filters.js';
+export { mapStore } from './map.js';
+export { projectsStore } from './projects.js';
+export { selectedProjectStore } from './selectedProject.js';
+export { filtersStore } from './filters.js';
+
+// Re-export types for convenience
+export type { Project } from '../types/index.js';
