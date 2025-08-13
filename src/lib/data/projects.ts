@@ -7,57 +7,81 @@ import type { Project } from '$lib/types';
 
 export const projects: Project[] = [
   {
-    id: 'boreal-forest-restoration',
-    title: 'Canadian Boreal Forest Restoration Initiative',
+    id: 'two-billion-trees',
+    title: 'Two Billion Trees Program',
     description:
-      'Large-scale reforestation project focused on restoring degraded areas of the Canadian boreal forest across Saskatchewan and Manitoba. The initiative combines tree planting with habitat restoration to support wildlife populations, improve carbon sequestration, and enhance ecosystem resilience against climate change.',
+      'The Government of Canada\'s commitment to plant two billion trees by 2031 to help fight climate change, create jobs, and support biodiversity. This national reforestation initiative works with provinces, territories, Indigenous communities, and private landowners to restore forests across the country.',
     impactCategory: 'conservation',
     region: 'north-america',
-    coordinates: [-106.3468, 52.9399] // Saskatchewan, Canada
+    coordinates: [-106.3468, 52.9399], // Saskatchewan, Canada (central focus)
+    url: 'https://www.canada.ca/en/campaign/2-billion-trees.html',
+    verified: true,
+    source: 'Government of Canada',
+    dateVerified: '2025-08-13'
   },
   {
-    id: 'offshore-wind-nova-scotia',
-    title: 'Nova Scotia Offshore Wind Project',
+    id: 'travers-solar',
+    title: 'Travers Solar Project',
     description:
-      'Pioneering offshore wind energy development off the coast of Nova Scotia, featuring advanced floating wind turbines designed for deep Atlantic waters. This project aims to generate clean electricity for Maritime provinces while creating jobs in the emerging offshore wind industry.',
+      'Canada\'s largest solar project located near Vulcan, Alberta. This 465 MW solar facility generates clean electricity for approximately 150,000 homes and represents a significant milestone in Alberta\'s renewable energy transition, supporting the province\'s net-zero goals.',
     impactCategory: 'renewable-energy',
     region: 'north-america',
-    coordinates: [-63.5859, 44.6820] // Nova Scotia, Canada
+    coordinates: [-113.335, 50.506], // Near Vulcan, Alberta
+    url: 'https://www.greengatepower.com/travers-solar',
+    verified: true,
+    source: 'Greengate Power Corporation',
+    dateVerified: '2025-08-13'
   },
   {
-    id: 'urban-farming-toronto',
-    title: 'Toronto Vertical Agriculture Network',
+    id: 'toronto-urban-agriculture',
+    title: 'Toronto Urban Agriculture Strategy',
     description:
-      'Innovative urban agriculture initiative utilizing vertical farming and hydroponic technology across Toronto\'s urban landscape. This project reduces food transportation emissions, provides fresh produce year-round, and demonstrates sustainable food production methods in Canada\'s largest city.',
+      'The City of Toronto\'s comprehensive strategy to increase local food production, improve food security, and reduce environmental impacts through urban farming initiatives. This includes community gardens, rooftop farming, and innovative growing technologies across Canada\'s largest city.',
     impactCategory: 'sustainable-agriculture',
     region: 'north-america',
-    coordinates: [-79.3832, 43.6532] // Toronto, Ontario
+    coordinates: [-79.3832, 43.6532], // Toronto, Ontario
+    url: 'https://www.toronto.ca/city-government/planning-development/planning-studies-initiatives/urban-agriculture/',
+    verified: true,
+    source: 'City of Toronto',
+    dateVerified: '2025-08-13'
   },
   {
-    id: 'plastic-waste-vancouver',
-    title: 'Vancouver Circular Waste Management Program',
+    id: 'vancouver-zero-waste',
+    title: 'Vancouver Zero Waste 2040',
     description:
-      'Comprehensive waste reduction and recycling initiative in Vancouver, focusing on plastic waste elimination and circular economy principles. The program includes advanced sorting facilities, community education, and partnerships with local businesses to achieve zero waste goals.',
+      'Vancouver\'s ambitious plan to become a zero waste city by 2040, focusing on waste reduction, reuse, and recycling programs. This comprehensive initiative includes circular economy principles, extended producer responsibility, and community engagement to eliminate waste sent to landfills.',
     impactCategory: 'waste-management',
     region: 'north-america',
-    coordinates: [-123.1207, 49.2827] // Vancouver, British Columbia
+    coordinates: [-123.1207, 49.2827], // Vancouver, British Columbia
+    url: 'https://vancouver.ca/green-vancouver/zero-waste-vancouver.aspx',
+    verified: true,
+    source: 'City of Vancouver',
+    dateVerified: '2025-08-13'
   },
   {
-    id: 'solar-alberta',
-    title: 'Alberta Solar Farm Initiative',
+    id: 'everwind-green-hydrogen',
+    title: 'EverWind Green Hydrogen Project',
     description:
-      'Large-scale solar energy project in southern Alberta, taking advantage of the region\'s high solar irradiance levels. This initiative includes multiple solar installations across rural Alberta, providing clean energy to the provincial grid while supporting local agricultural communities.',
+      'Atlantic Canada\'s first large-scale green hydrogen and ammonia production facility in Nova Scotia. This project harnesses wind energy to produce clean hydrogen for export and domestic use, positioning Canada as a leader in the global green hydrogen economy.',
     impactCategory: 'renewable-energy',
     region: 'north-america',
-    coordinates: [-113.4909, 51.0447] // Calgary area, Alberta
+    coordinates: [-63.5859, 44.6820], // Nova Scotia, Canada
+    url: 'https://everwindfuels.com/',
+    verified: true,
+    source: 'EverWind Fuels',
+    dateVerified: '2025-08-13'
   },
   {
-    id: 'wetland-conservation-manitoba',
-    title: 'Manitoba Prairie Wetland Conservation',
+    id: 'ducks-unlimited-prairie-wetlands',
+    title: 'Prairie Wetland Conservation (Ducks Unlimited)',
     description:
-      'Critical wetland preservation and restoration project across Manitoba\'s prairie pothole region. This conservation initiative protects vital waterfowl habitat, improves water quality, and enhances carbon storage while supporting biodiversity in Canada\'s agricultural heartland.',
+      'Ducks Unlimited Canada\'s ongoing wetland conservation efforts across the Prairie Pothole Region of Manitoba, Saskatchewan, and Alberta. This critical program protects and restores wetland habitats that support waterfowl, improve water quality, and provide natural climate solutions through carbon storage.',
     impactCategory: 'conservation',
     region: 'north-america',
-    coordinates: [-97.1384, 49.8951] // Winnipeg area, Manitoba
+    coordinates: [-97.1384, 49.8951], // Winnipeg area, Manitoba
+    url: 'https://www.ducks.ca/places/manitoba/',
+    verified: true,
+    source: 'Ducks Unlimited Canada',
+    dateVerified: '2025-08-13'
   }
 ];
