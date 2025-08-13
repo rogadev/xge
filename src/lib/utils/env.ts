@@ -2,17 +2,17 @@
  * Environment variable utilities for the XGE Climate Explorer
  */
 
-import { MAPBOX_ACCESS_TOKEN } from '$env/static/private';
+import { PUBLIC_MAPBOX_ACCESS_TOKEN } from '$env/static/public';
 
 /**
  * Get the Mapbox access token from environment variables
  * @throws Error if token is not configured
  */
 export function getMapboxToken(): string {
-  if (!MAPBOX_ACCESS_TOKEN) {
-    throw new Error('MAPBOX_ACCESS_TOKEN environment variable is not configured');
+  if (!PUBLIC_MAPBOX_ACCESS_TOKEN) {
+    throw new Error('PUBLIC_MAPBOX_ACCESS_TOKEN environment variable is not configured');
   }
-  return MAPBOX_ACCESS_TOKEN;
+  return PUBLIC_MAPBOX_ACCESS_TOKEN;
 }
 
 /**
