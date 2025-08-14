@@ -1,11 +1,47 @@
+<!--
+	@fileoverview Generic error boundary for wrapping components that might throw errors.
+	Provides configurable error UI with optional retry functionality. Unlike AppErrorBoundary
+	and DataErrorBoundary, this is designed for component-level error handling with
+	customizable messaging and behavior.
+	
+	@component ErrorBoundary
+	@example
+	```svelte
+	<ErrorBoundary 
+		context="Map Rendering" 
+		fallbackMessage="Unable to load map. Check your connection."
+		onRetry={() => mapStore.reinitialize()}
+	>
+		{#snippet children()}
+			<MapContainer />
+		{/snippet}
+	</ErrorBoundary>
+	```
+-->
 <script lang="ts">
 	import { handleError } from '$lib/utils/errors.js';
+	import type { Snippet } from 'svelte';
+
+	/**
+	 * Error information structure for display
+	 */
+	interface ComponentErrorInfo {
+		/** User-friendly error message */
+		message: string;
+		/** Error severity level for styling/logging */
+		severity: string;
+	}
 
 	interface Props {
-		children: any;
+		/** Child components to render within error boundary */
+		children: Snippet;
+		/** User-facing error message when errors occur */
 		fallbackMessage?: string;
+		/** Whether to show retry button in error UI */
 		showRetry?: boolean;
+		/** Callback function to execute when user clicks retry */
 		onRetry?: () => void;
+		/** Context name for error logging and UI display */
 		context?: string;
 	}
 
@@ -18,10 +54,15 @@
 	}: Props = $props();
 
 	let hasError = $state(false);
-	let errorInfo = $state<{ message: string; severity: string } | null>(null);
+	let errorInfo = $state<ComponentErrorInfo | null>(null);
 
-	// Error handler function
-	function handleComponentError(error: unknown) {
+	/**
+	 * Processes component errors and updates error state.
+	 * Converts technical errors into user-friendly messages using the error utility.
+	 *
+	 * @param error - The error that occurred within the component boundary
+	 */
+	function handleComponentError(error: unknown): void {
 		console.error(`Error in ${context}:`, error);
 
 		const info = handleError(error, context);
@@ -33,8 +74,11 @@
 		hasError = true;
 	}
 
-	// Retry function
-	function retry() {
+	/**
+	 * Resets error state and optionally triggers custom retry logic.
+	 * Allows components to recover from transient errors without full page reload.
+	 */
+	function retry(): void {
 		hasError = false;
 		errorInfo = null;
 		if (onRetry) {
@@ -42,13 +86,11 @@
 		}
 	}
 
-	// Reset error state when component props change
-	$effect(() => {
-		if (children) {
-			hasError = false;
-			errorInfo = null;
-		}
-	});
+	/**
+	 * Exposes error handler for parent components to manually trigger.
+	 * Useful for try-catch blocks that want to delegate error display.
+	 */
+	export { handleComponentError as triggerError };
 </script>
 
 {#if hasError && errorInfo}

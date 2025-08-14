@@ -1,11 +1,65 @@
+<!--
+	@fileoverview Main HTML template for the XGE Climate Explorer application.
+	Provides the base document structure with optimizations for performance,
+	accessibility, and SEO. Includes mobile-first responsive design setup
+	and SvelteKit integration points.
+-->
 <!doctype html>
 <html lang="en">
 	<head>
+		<!-- Character encoding and viewport configuration -->
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+		<!-- Security and performance headers -->
+		<meta http-equiv="X-Content-Type-Options" content="nosniff" />
+		<meta name="referrer" content="strict-origin-when-cross-origin" />
+
+		<!-- Theme and appearance -->
+		<meta name="theme-color" content="#1f2937" />
+		<meta name="color-scheme" content="light" />
+
+		<!-- Application metadata (dynamically set by SvelteKit) -->
+		<meta
+			name="description"
+			content="Explore climate action projects across Canada through an interactive map interface"
+		/>
+		<meta
+			name="keywords"
+			content="climate, environment, sustainability, Canada, renewable energy, conservation"
+		/>
+
+		<!-- Open Graph metadata for social sharing -->
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="XGE Climate Explorer" />
+
+		<!-- Favicon and app icons -->
+		<link rel="icon" href="%sveltekit.assets%/favicon.png" type="image/png" />
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/favicon.png" />
+
+		<!-- Performance optimization: DNS prefetch for external resources -->
+		<link rel="dns-prefetch" href="//api.mapbox.com" />
+		<link rel="preconnect" href="https://api.mapbox.com" crossorigin />
+
+		<!-- SvelteKit head injection point for dynamic content -->
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
+		<!-- 
+			Main application container with display: contents to avoid layout issues.
+			SvelteKit injects the application content here.
+		-->
 		<div style="display: contents">%sveltekit.body%</div>
+
+		<!-- 
+			Accessibility: Skip link for keyboard navigation.
+			Hidden by default, visible on focus for screen readers.
+		-->
+		<a
+			href="#main-content"
+			class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white"
+		>
+			Skip to main content
+		</a>
 	</body>
 </html>
