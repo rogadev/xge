@@ -12,11 +12,29 @@
 	let isLoading = true;
 	let loadingTimeout: ReturnType<typeof setTimeout>;
 
+	// Style options for fallback - using older, more compatible styles
+	const styleOptions = [
+		'mapbox://styles/mapbox/streets-v11',
+		'mapbox://styles/mapbox/light-v10',
+		'mapbox://styles/mapbox/outdoors-v11',
+		'mapbox://styles/mapbox/satellite-v9'
+	];
+
 	onMount(async () => {
 		try {
 			// Validate Mapbox token
-			if (!PUBLIC_MAPBOX_ACCESS_TOKEN) {
-				throw new Error('Mapbox access token is not configured');
+			if (
+				!PUBLIC_MAPBOX_ACCESS_TOKEN ||
+				PUBLIC_MAPBOX_ACCESS_TOKEN === 'your_mapbox_access_token_here'
+			) {
+				throw new Error(
+					'Mapbox access token is not configured properly. Please check your .env file.'
+				);
+			}
+
+			// Validate token format (Mapbox tokens start with 'pk.')
+			if (!PUBLIC_MAPBOX_ACCESS_TOKEN.startsWith('pk.')) {
+				throw new Error('Invalid Mapbox access token format. Token should start with "pk."');
 			}
 
 			// Set Mapbox access token
@@ -30,10 +48,15 @@
 				}
 			}, 3000);
 
-			// Initialize map
+			// Log token info for debugging
+			console.log('Mapbox token configured:', PUBLIC_MAPBOX_ACCESS_TOKEN ? 'Yes' : 'No');
+			console.log('Token starts with pk.:', PUBLIC_MAPBOX_ACCESS_TOKEN?.startsWith('pk.'));
+			console.log('Attempting to load map with style: mapbox://styles/mapbox/light-v10');
+
+			// Initialize map with most compatible style
 			map = new mapboxgl.Map({
 				container: mapContainer,
-				style: 'mapbox://styles/mapbox/light-v11',
+				style: 'mapbox://styles/mapbox/light-v10', // Use basic style that should work
 				center: [-106.3468, 56.1304], // Center on Canada
 				zoom: 4,
 				attributionControl: true,
@@ -96,12 +119,55 @@
 				mapStore.setLoaded(true);
 			});
 
-			// Handle map errors
+			// Handle map errors with detailed logging and graceful handling
+			let errorCount = 0;
 			map.on('error', (e) => {
-				clearTimeout(loadingTimeout);
-				isLoading = false;
-				console.error('Mapbox error:', e);
-				mapStore.setError('Unable to load map. Please check your connection.');
+				errorCount++;
+				console.error(`Mapbox error #${errorCount}:`, e);
+				console.error('Error details:', {
+					type: e.type,
+					sourceId: (e as any).sourceId || 'unknown',
+					tile: (e as any).tile || null,
+					error: e.error
+				});
+
+				// If it's a tile loading error (common with token restrictions), just log it
+				// but don't break the map - many tile errors are recoverable
+				if ((e as any).tile && e.error) {
+					console.warn(
+						'Tile loading failed - this may be due to token restrictions at this zoom level'
+					);
+					// Don't show error to user for individual tile failures
+					return;
+				}
+
+				// If this is a style error, try fallback styles
+				if (e.error && (e.error.message?.includes('style') || e.error.message?.includes('404'))) {
+					const currentStyle =
+						(map?.getStyle()?.metadata as any)?.['mapbox:origin'] || styleOptions[0];
+					const currentIndex = styleOptions.findIndex((style) => style === currentStyle);
+					const nextStyle = styleOptions[currentIndex + 1];
+
+					if (nextStyle) {
+						console.log('Trying fallback style:', nextStyle);
+						try {
+							map?.setStyle(nextStyle);
+							return; // Don't show error yet, let the fallback try
+						} catch (fallbackError) {
+							console.error('Fallback style also failed:', fallbackError);
+						}
+					}
+				}
+
+				// Only show error to user for critical failures after multiple errors
+				if (errorCount > 10) {
+					clearTimeout(loadingTimeout);
+					isLoading = false;
+
+					mapStore.setError(
+						'Map tiles are failing to load. Your Mapbox token may need additional permissions or URL restrictions updated.'
+					);
+				}
 			});
 		} catch (error) {
 			clearTimeout(loadingTimeout);
@@ -109,8 +175,10 @@
 			console.error('Map initialization error:', error);
 
 			if (error instanceof Error) {
-				if (error.message.includes('token')) {
-					mapStore.setError('Map configuration error. Please contact support.');
+				if (error.message.includes('token') || error.message.includes('access token')) {
+					mapStore.setError(`Mapbox Token Error: ${error.message}`);
+				} else if (error.message.includes('format')) {
+					mapStore.setError('Invalid Mapbox token format. Please check your .env file.');
 				} else {
 					mapStore.setError('Map temporarily unavailable. Please try again.');
 				}
