@@ -1,5 +1,5 @@
 /**
- * @fileoverview Core TypeScript type definitions for the XGE Climate Explorer application.
+ * @fileoverview Core TypeScript type definitions for the XGE Project Explorer application.
  * 
  * This module contains all the primary data structures and interface definitions
  * used throughout the application, including project data models, map state management,

@@ -1,8 +1,8 @@
-# XGE — Climate Explorer
+# XGE — Project Explorer
 
 > Interactive map experience showcasing climate and sustainability initiatives
 
-XGE Climate Explorer turns static climate information into an engaging, explorable map so people can quickly discover projects, understand impact, and take action.
+XGE Project Explorer turns static climate information into an engaging, explorable map so people can quickly discover projects, understand impact, and take action.
 
 ## Tech Highlights
 

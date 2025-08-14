@@ -1,5 +1,5 @@
 /**
- * Static project data for the XGE Climate Explorer
+ * Static project data for the XGE Project Explorer
  * 
  * Contains curated Canadian climate and sustainability initiatives.
  * Projects are manually verified and represent real-world implementations

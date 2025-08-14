@@ -1,5 +1,5 @@
 /**
- * Error handling utilities for the XGE Climate Explorer
+ * Error handling utilities for the XGE Project Explorer
  */
 
 /**

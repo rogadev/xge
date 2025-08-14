@@ -1,5 +1,5 @@
 <!--
-	@fileoverview Root layout component for the XGE Climate Explorer application.
+	@fileoverview Root layout component for the XGE Project Explorer application.
 	Provides global styles, favicon configuration, and base document structure.
 	Serves as the foundation for all pages with consistent styling and metadata.
 	
@@ -37,7 +37,7 @@
 		Document title configuration.
 		Can be overridden by individual pages using svelte:head.
 	-->
-	<title>XGE Climate Explorer</title>
+	<title>XGE Project Explorer</title>
 
 	<!-- 
 		Meta description for SEO and social sharing.
@@ -52,7 +52,7 @@
 		Additional Open Graph metadata for enhanced social sharing.
 		Provides rich previews when links are shared on social platforms.
 	-->
-	<meta property="og:title" content="XGE Climate Explorer" />
+	<meta property="og:title" content="XGE Project Explorer" />
 	<meta
 		property="og:description"
 		content="Interactive map showcasing climate action projects across Canada"
@@ -64,7 +64,7 @@
 		Twitter Card metadata for Twitter-specific link previews.
 	-->
 	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:title" content="XGE Climate Explorer" />
+	<meta name="twitter:title" content="XGE Project Explorer" />
 	<meta
 		name="twitter:description"
 		content="Interactive map showcasing climate action projects across Canada"
