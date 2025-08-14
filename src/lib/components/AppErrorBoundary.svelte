@@ -1,18 +1,48 @@
+<!--
+	@fileoverview Application-level error boundary that catches unhandled errors and promise rejections.
+	Provides a user-friendly error dialog with options to reload or dismiss. Essential for production
+	resilience and preventing white screens of death.
+	
+	@component AppErrorBoundary
+	@example
+	```svelte
+	<AppErrorBoundary>
+		{#snippet children()}
+			<App />
+		{/snippet}
+	</AppErrorBoundary>
+	```
+-->
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { handleError } from '$lib/utils/errors.js';
+	import type { Snippet } from 'svelte';
+
+	/**
+	 * Error information displayed in the error dialog
+	 */
+	interface ErrorInfo {
+		/** User-friendly error message */
+		message: string;
+		/** When the error occurred */
+		timestamp: Date;
+	}
 
 	interface Props {
-		children: any;
+		/** Child components to render within error boundary */
+		children: Snippet;
 	}
 
 	let { children }: Props = $props();
 
 	let hasAppError = $state(false);
-	let errorInfo = $state<{ message: string; timestamp: Date } | null>(null);
+	let errorInfo = $state<ErrorInfo | null>(null);
 
-	// Global error handler for unhandled errors
-	function handleGlobalError(event: ErrorEvent | PromiseRejectionEvent) {
+	/**
+	 * Handles both JavaScript errors and unhandled promise rejections.
+	 * Converts technical errors into user-friendly messages and triggers error UI.
+	 */
+	function handleGlobalError(event: ErrorEvent | PromiseRejectionEvent): void {
 		console.error('Global error caught:', event);
 
 		let message = 'An unexpected error occurred';
@@ -33,13 +63,13 @@
 		hasAppError = true;
 	}
 
-	// Set up global error handlers
+	/**
+	 * Registers global error listeners to catch all unhandled errors.
+	 * Only runs in browser environment to avoid SSR issues.
+	 */
 	$effect(() => {
 		if (browser) {
-			// Handle unhandled JavaScript errors
 			window.addEventListener('error', handleGlobalError);
-
-			// Handle unhandled promise rejections
 			window.addEventListener('unhandledrejection', handleGlobalError);
 
 			return () => {
@@ -49,13 +79,21 @@
 		}
 	});
 
-	function reloadApp() {
+	/**
+	 * Forces a full page reload to recover from critical errors.
+	 * Only available in browser environment.
+	 */
+	function reloadApp(): void {
 		if (browser) {
 			window.location.reload();
 		}
 	}
 
-	function dismissError() {
+	/**
+	 * Dismisses the error dialog and attempts to continue normal operation.
+	 * Use with caution as underlying error may still exist.
+	 */
+	function dismissError(): void {
 		hasAppError = false;
 		errorInfo = null;
 	}

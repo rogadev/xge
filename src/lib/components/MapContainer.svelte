@@ -1,231 +1,354 @@
+<!--
+	@fileoverview Core Mapbox GL JS map container with comprehensive error handling and mobile optimization.
+	Handles map initialization, token validation, responsive controls, accessibility features,
+	and graceful error recovery. Implements production-ready map loading with 3-second timeout
+	and automatic style fallbacks for reliability.
+	
+	@component MapContainer
+	@example
+	```svelte
+	<MapContainer />
+	```
+-->
 <script lang="ts">
 	import { mapStore } from '$lib/stores/map.js';
 	import { PUBLIC_MAPBOX_ACCESS_TOKEN } from '$env/static/public';
 	import mapboxgl from 'mapbox-gl';
 
-	// Map container element reference
-	let mapContainer: HTMLDivElement | undefined = $state();
-	let map: mapboxgl.Map | null = null; // Non-reactive to prevent circular dependency
-	let isInitialized = false; // Non-reactive to prevent effect loops
-
-	// Loading and error states
-	let isLoading = $state(true);
-	let loadingTimeout: ReturnType<typeof setTimeout>;
-
-	// Style options for fallback - using older, more compatible styles
-	const styleOptions = [
+	/**
+	 * Mapbox style URLs with fallback options.
+	 * Ordered from most to least preferred for progressive fallback.
+	 */
+	const styleOptions: readonly string[] = [
 		'mapbox://styles/mapbox/streets-v11',
 		'mapbox://styles/mapbox/light-v10',
 		'mapbox://styles/mapbox/outdoors-v11',
 		'mapbox://styles/mapbox/satellite-v9'
-	];
+	] as const;
 
-	// Initialize map when component mounts and mapContainer is available
+	/**
+	 * Canada geographic center coordinates for map initialization.
+	 */
+	const CANADA_CENTER: [number, number] = [-106.3468, 56.1304] as const;
+
+	/**
+	 * Map loading timeout duration in milliseconds (3 seconds for performance requirement).
+	 */
+	const MAP_LOAD_TIMEOUT = 3000 as const;
+
+	/**
+	 * Error threshold before showing user-facing error messages.
+	 * Prevents minor tile loading failures from disrupting user experience.
+	 */
+	const ERROR_THRESHOLD = 10 as const;
+
+	let mapContainer: HTMLDivElement | undefined = $state();
+	let map: mapboxgl.Map | null = null; // Non-reactive to prevent circular dependencies
+	let isInitialized = false; // Non-reactive to prevent effect loops
+	let isLoading = $state(true);
+	let loadingTimeout: ReturnType<typeof setTimeout>;
+
+	/**
+	 * Initializes the Mapbox map with comprehensive error handling and mobile optimization.
+	 * Implements token validation, responsive controls, accessibility features, and cleanup.
+	 */
 	$effect(() => {
 		if (!mapContainer || isInitialized) return;
 
-		isInitialized = true; // Set immediately to prevent re-runs
+		isInitialized = true;
 
-		async function initializeMap() {
+		async function initializeMap(): Promise<void> {
 			try {
-				// Validate Mapbox token
-				if (
-					!PUBLIC_MAPBOX_ACCESS_TOKEN ||
-					PUBLIC_MAPBOX_ACCESS_TOKEN === 'your_mapbox_access_token_here'
-				) {
-					throw new Error(
-						'Mapbox access token is not configured properly. Please check your .env file.'
-					);
-				}
-
-				// Validate token format (Mapbox tokens start with 'pk.')
-				if (!PUBLIC_MAPBOX_ACCESS_TOKEN.startsWith('pk.')) {
-					throw new Error('Invalid Mapbox access token format. Token should start with "pk."');
-				}
-
-				// Set Mapbox access token
-				mapboxgl.accessToken = PUBLIC_MAPBOX_ACCESS_TOKEN;
-
-				// Set loading timeout (3 seconds as per requirement 5.1)
-				loadingTimeout = setTimeout(() => {
-					if (isLoading) {
-						mapStore.setError('Map loading timeout. Please check your connection.');
-						isLoading = false;
-					}
-				}, 3000);
-
-				// Log token info for debugging
-				console.log('Mapbox token configured:', PUBLIC_MAPBOX_ACCESS_TOKEN ? 'Yes' : 'No');
-				console.log('Token starts with pk.:', PUBLIC_MAPBOX_ACCESS_TOKEN?.startsWith('pk.'));
-				console.log('Attempting to load map with style: mapbox://styles/mapbox/light-v10');
-
-				// Initialize map with enhanced mobile support
-				map = new mapboxgl.Map({
-					container: mapContainer!,
-					style: 'mapbox://styles/mapbox/light-v10', // Use basic style that should work
-					center: [-106.3468, 56.1304], // Center on Canada
-					zoom: 4,
-					maxZoom: 18,
-					minZoom: 2,
-					attributionControl: true,
-					// Enhanced mobile interactions
-					doubleClickZoom: true,
-					dragPan: true,
-					dragRotate: false, // Disable rotation for better UX
-					scrollZoom: true,
-					touchZoomRotate: true,
-					touchPitch: false, // Disable pitch for better mobile UX
-					// Performance optimizations
-					antialias: true,
-					fadeDuration: 300,
-					// Accessibility
-					keyboard: true,
-					// Touch gesture settings optimized for mobile
-					cooperativeGestures: false, // Allow single-finger pan
-					// Better mobile viewport handling
-					preserveDrawingBuffer: false,
-					refreshExpiredTiles: true
-				});
-
-				// Handle map load event
-				map.on('load', () => {
-					clearTimeout(loadingTimeout);
-					isLoading = false;
-
-					// Add responsive navigation controls
-					const nav = new mapboxgl.NavigationControl({
-						showCompass: false, // Hide compass for cleaner UI
-						showZoom: true,
-						visualizePitch: false
-					});
-
-					// Position controls responsively
-					const isMobile = window.innerWidth < 768;
-					map!.addControl(nav, isMobile ? 'bottom-right' : 'top-right');
-
-					// Add fullscreen control (desktop only for better UX)
-					if (!isMobile) {
-						const fullscreen = new mapboxgl.FullscreenControl();
-						map!.addControl(fullscreen, 'top-right');
-					}
-
-					// Add smooth easing for better UX
-					map!.on('movestart', () => {
-						map!.getCanvas().style.cursor = 'grabbing';
-					});
-
-					map!.on('moveend', () => {
-						map!.getCanvas().style.cursor = 'grab';
-					});
-
-					// Set initial cursor
-					map!.getCanvas().style.cursor = 'grab';
-
-					// Enhanced accessibility and mobile support
-					const canvas = map!.getCanvas();
-					canvas.setAttribute('tabindex', '0');
-					canvas.setAttribute(
-						'aria-label',
-						'Interactive climate projects map. Use arrow keys to pan, plus and minus keys to zoom, or touch gestures on mobile.'
-					);
-
-					// Optimize touch events for mobile
-					canvas.style.touchAction = 'pan-x pan-y';
-
-					// Handle viewport changes for responsive behavior
-					const handleResize = () => {
-						map!.resize();
-					};
-					window.addEventListener('resize', handleResize);
-					window.addEventListener('orientationchange', handleResize);
-
-					// Update store
-					mapStore.setInstance(map!);
-					mapStore.setLoaded(true);
-				});
-
-				// Handle map errors with detailed logging and graceful handling
-				let errorCount = 0;
-				map.on('error', (e) => {
-					errorCount++;
-					console.error(`Mapbox error #${errorCount}:`, e);
-					console.error('Error details:', {
-						type: e.type,
-						sourceId: (e as any).sourceId || 'unknown',
-						tile: (e as any).tile || null,
-						error: e.error
-					});
-
-					// If it's a tile loading error (common with token restrictions), just log it
-					// but don't break the map - many tile errors are recoverable
-					if ((e as any).tile && e.error) {
-						console.warn(
-							'Tile loading failed - this may be due to token restrictions at this zoom level'
-						);
-						// Don't show error to user for individual tile failures
-						return;
-					}
-
-					// If this is a style error, try fallback styles
-					if (e.error && (e.error.message?.includes('style') || e.error.message?.includes('404'))) {
-						const currentStyle =
-							(map?.getStyle()?.metadata as any)?.['mapbox:origin'] || styleOptions[0];
-						const currentIndex = styleOptions.findIndex((style) => style === currentStyle);
-						const nextStyle = styleOptions[currentIndex + 1];
-
-						if (nextStyle) {
-							console.log('Trying fallback style:', nextStyle);
-							try {
-								map?.setStyle(nextStyle);
-								return; // Don't show error yet, let the fallback try
-							} catch (fallbackError) {
-								console.error('Fallback style also failed:', fallbackError);
-							}
-						}
-					}
-
-					// Only show error to user for critical failures after multiple errors
-					if (errorCount > 10) {
-						clearTimeout(loadingTimeout);
-						isLoading = false;
-
-						mapStore.setError(
-							'Map tiles are failing to load. Your Mapbox token may need additional permissions or URL restrictions updated.'
-						);
-					}
-				});
+				validateMapboxToken();
+				configureMapboxToken();
+				setupLoadingTimeout();
+				await createMapInstance();
 			} catch (error) {
-				clearTimeout(loadingTimeout);
-				isLoading = false;
-				console.error('Map initialization error:', error);
+				handleInitializationError(error);
+			}
+		}
 
-				if (error instanceof Error) {
-					if (error.message.includes('token') || error.message.includes('access token')) {
-						mapStore.setError(`Mapbox Token Error: ${error.message}`);
-					} else if (error.message.includes('format')) {
-						mapStore.setError('Invalid Mapbox token format. Please check your .env file.');
-					} else {
-						mapStore.setError('Map temporarily unavailable. Please try again.');
-					}
+		/**
+		 * Validates Mapbox access token existence and format.
+		 * Throws descriptive errors for missing or malformed tokens.
+		 */
+		function validateMapboxToken(): void {
+			if (
+				!PUBLIC_MAPBOX_ACCESS_TOKEN ||
+				PUBLIC_MAPBOX_ACCESS_TOKEN === 'your_mapbox_access_token_here'
+			) {
+				throw new Error(
+					'Mapbox access token is not configured properly. Please check your .env file.'
+				);
+			}
+
+			if (!PUBLIC_MAPBOX_ACCESS_TOKEN.startsWith('pk.')) {
+				throw new Error('Invalid Mapbox access token format. Token should start with "pk."');
+			}
+		}
+
+		/**
+		 * Configures the global Mapbox access token for map initialization.
+		 */
+		function configureMapboxToken(): void {
+			mapboxgl.accessToken = PUBLIC_MAPBOX_ACCESS_TOKEN;
+		}
+
+		/**
+		 * Sets up 3-second loading timeout to meet performance requirements.
+		 */
+		function setupLoadingTimeout(): void {
+			loadingTimeout = setTimeout(() => {
+				if (isLoading) {
+					mapStore.setError('Map loading timeout. Please check your connection.');
+					isLoading = false;
+				}
+			}, MAP_LOAD_TIMEOUT);
+		}
+
+		/**
+		 * Creates the Mapbox map instance with optimized settings for mobile and accessibility.
+		 */
+		async function createMapInstance(): Promise<void> {
+			map = new mapboxgl.Map({
+				container: mapContainer!,
+				style: styleOptions[0],
+				center: CANADA_CENTER,
+				zoom: 4,
+				maxZoom: 18,
+				minZoom: 2,
+				attributionControl: true,
+				// Mobile-optimized interaction settings
+				doubleClickZoom: true,
+				dragPan: true,
+				dragRotate: false, // Disabled for better mobile UX
+				scrollZoom: true,
+				touchZoomRotate: true,
+				touchPitch: false, // Disabled for better mobile UX
+				cooperativeGestures: false, // Allow single-finger pan
+				// Performance optimizations
+				antialias: true,
+				fadeDuration: 300,
+				preserveDrawingBuffer: false,
+				refreshExpiredTiles: true,
+				// Accessibility support
+				keyboard: true
+			});
+
+			setupMapEventHandlers();
+		}
+
+		/**
+		 * Configures map event handlers for loading, errors, and user interactions.
+		 */
+		function setupMapEventHandlers(): void {
+			if (!map) return;
+
+			map.on('load', handleMapLoad);
+			map.on('error', handleMapError);
+		}
+
+		/**
+		 * Handles successful map load by setting up controls and accessibility features.
+		 */
+		function handleMapLoad(): void {
+			if (!map) return;
+
+			clearTimeout(loadingTimeout);
+			isLoading = false;
+
+			setupNavigationControls();
+			setupAccessibilityFeatures();
+			setupResponsiveHandlers();
+			updateMapStore();
+		}
+
+		/**
+		 * Sets up responsive navigation and fullscreen controls.
+		 */
+		function setupNavigationControls(): void {
+			if (!map) return;
+
+			const nav = new mapboxgl.NavigationControl({
+				showCompass: false, // Cleaner UI
+				showZoom: true,
+				visualizePitch: false
+			});
+
+			const isMobile = window.innerWidth < 768;
+			map.addControl(nav, isMobile ? 'bottom-right' : 'top-right');
+
+			// Desktop-only fullscreen control
+			if (!isMobile) {
+				const fullscreen = new mapboxgl.FullscreenControl();
+				map.addControl(fullscreen, 'top-right');
+			}
+		}
+
+		/**
+		 * Configures accessibility features and cursor states for better UX.
+		 */
+		function setupAccessibilityFeatures(): void {
+			if (!map) return;
+
+			const canvas = map.getCanvas();
+
+			// Accessibility attributes
+			canvas.setAttribute('tabindex', '0');
+			canvas.setAttribute(
+				'aria-label',
+				'Interactive climate projects map. Use arrow keys to pan, plus and minus keys to zoom, or touch gestures on mobile.'
+			);
+
+			// Touch optimization
+			canvas.style.touchAction = 'pan-x pan-y';
+
+			// Interactive cursor states
+			map.on('movestart', () => {
+				canvas.style.cursor = 'grabbing';
+			});
+
+			map.on('moveend', () => {
+				canvas.style.cursor = 'grab';
+			});
+
+			canvas.style.cursor = 'grab';
+		}
+
+		/**
+		 * Sets up responsive handlers for viewport changes and device orientation.
+		 */
+		function setupResponsiveHandlers(): void {
+			if (!map) return;
+
+			const handleResize = (): void => {
+				map!.resize();
+			};
+
+			window.addEventListener('resize', handleResize);
+			window.addEventListener('orientationchange', handleResize);
+		}
+
+		/**
+		 * Updates the map store with the initialized instance.
+		 */
+		function updateMapStore(): void {
+			if (!map) return;
+
+			mapStore.setInstance(map);
+			mapStore.setLoaded(true);
+		}
+
+		/**
+		 * Handles map errors with progressive fallback and intelligent error filtering.
+		 */
+		let errorCount = 0;
+		function handleMapError(e: mapboxgl.ErrorEvent): void {
+			errorCount++;
+			console.error(`Mapbox error #${errorCount}:`, e);
+
+			// Filter out recoverable tile loading errors
+			if (isRecoverableTileError(e)) {
+				console.warn('Recoverable tile loading error - continuing operation');
+				return;
+			}
+
+			// Attempt style fallback for style-related errors
+			if (isStyleError(e) && attemptStyleFallback()) {
+				return;
+			}
+
+			// Show user error only after threshold to avoid disruption
+			if (errorCount > ERROR_THRESHOLD) {
+				showCriticalError();
+			}
+		}
+
+		/**
+		 * Determines if an error is a recoverable tile loading failure.
+		 */
+		function isRecoverableTileError(e: mapboxgl.ErrorEvent): boolean {
+			return !!(e as any).tile && !!e.error;
+		}
+
+		/**
+		 * Determines if an error is related to map style loading.
+		 */
+		function isStyleError(e: mapboxgl.ErrorEvent): boolean {
+			return !!(
+				e.error &&
+				(e.error.message?.includes('style') || e.error.message?.includes('404'))
+			);
+		}
+
+		/**
+		 * Attempts to fallback to next available map style.
+		 * Returns true if fallback was attempted, false if no more options.
+		 */
+		function attemptStyleFallback(): boolean {
+			if (!map) return false;
+
+			const currentStyle = (map.getStyle()?.metadata as any)?.['mapbox:origin'] || styleOptions[0];
+			const currentIndex = styleOptions.findIndex((style) => style === currentStyle);
+			const nextStyle = styleOptions[currentIndex + 1];
+
+			if (nextStyle) {
+				console.log('Attempting style fallback:', nextStyle);
+				try {
+					map.setStyle(nextStyle);
+					return true;
+				} catch (fallbackError) {
+					console.error('Style fallback failed:', fallbackError);
+				}
+			}
+
+			return false;
+		}
+
+		/**
+		 * Shows critical error message to user after all recovery attempts.
+		 */
+		function showCriticalError(): void {
+			clearTimeout(loadingTimeout);
+			isLoading = false;
+			mapStore.setError(
+				'Map tiles are failing to load. Your Mapbox token may need additional permissions or URL restrictions updated.'
+			);
+		}
+
+		/**
+		 * Handles map initialization errors with specific error messaging.
+		 */
+		function handleInitializationError(error: unknown): void {
+			clearTimeout(loadingTimeout);
+			isLoading = false;
+			console.error('Map initialization error:', error);
+
+			if (error instanceof Error) {
+				if (error.message.includes('token')) {
+					mapStore.setError(`Mapbox Token Error: ${error.message}`);
+				} else if (error.message.includes('format')) {
+					mapStore.setError('Invalid Mapbox token format. Please check your .env file.');
 				} else {
 					mapStore.setError('Map temporarily unavailable. Please try again.');
 				}
+			} else {
+				mapStore.setError('Map temporarily unavailable. Please try again.');
 			}
 		}
 
 		initializeMap();
 
-		// Cleanup function (equivalent to onDestroy)
+		/**
+		 * Cleanup function to prevent memory leaks and reset state.
+		 */
 		return () => {
-			// Clear timeout if component is destroyed during loading
 			if (loadingTimeout) {
 				clearTimeout(loadingTimeout);
 			}
 
-			// Comprehensive map cleanup to prevent memory leaks
 			if (map) {
 				try {
-					// Remove the map instance (this handles most cleanup automatically)
 					map.remove();
 				} catch (e) {
 					console.warn('Error during map cleanup:', e);
@@ -234,10 +357,7 @@
 				}
 			}
 
-			// Reset initialization state
 			isInitialized = false;
-
-			// Reset store state
 			mapStore.reset();
 		};
 	});

@@ -1,30 +1,57 @@
+<!--
+	@fileoverview Interactive filter controls for climate projects with accessibility support.
+	Provides dropdown filters for impact categories and regions with real-time counts and
+	clear visual feedback. Implements comprehensive keyboard navigation and mobile optimization.
+	
+	@component FilterControls
+	@example
+	```svelte
+	<FilterControls />
+	```
+-->
 <script lang="ts">
 	import { filtersStore } from '$lib/stores/filters.js';
 	import { projectsStore } from '$lib/stores/projects.js';
 	import type { Project } from '$lib/types';
 
-	// Available filter options
-	const impactCategories = [
+	/**
+	 * Filter option structure for dropdowns
+	 */
+	interface FilterOption {
+		/** Unique identifier for the filter value */
+		value: string;
+		/** Human-readable display label */
+		label: string;
+		/** Number of projects matching this filter (computed) */
+		count?: number;
+	}
+
+	/**
+	 * Static filter configuration matching the Project interface.
+	 * These should stay in sync with the Project type definition.
+	 */
+	const impactCategories: FilterOption[] = [
 		{ value: 'renewable-energy', label: 'Renewable Energy' },
 		{ value: 'conservation', label: 'Conservation' },
 		{ value: 'sustainable-agriculture', label: 'Sustainable Agriculture' },
 		{ value: 'waste-management', label: 'Waste Management' }
 	];
 
-	const regions = [
+	const regions: FilterOption[] = [
 		{ value: 'north-america', label: 'North America' }
-		// Currently all projects are in North America, but this is extensible
+		// Extensible for future regions beyond North America
 	];
 
-	// Local state for dropdown open/close using $state()
 	let impactCategoryDropdownOpen = $state(false);
 	let regionDropdownOpen = $state(false);
 
-	// Derived reactive values using $derived()
 	let currentFilters = $derived($filtersStore);
 	let allProjects = $derived($projectsStore.allProjects);
 
-	// Calculate counts for each filter option using $derived()
+	/**
+	 * Calculates project counts for each impact category considering active region filter.
+	 * Cross-filters to show accurate counts when multiple filters are applied.
+	 */
 	let impactCategoryCounts = $derived(
 		impactCategories.map((category) => ({
 			...category,
@@ -36,6 +63,10 @@
 		}))
 	);
 
+	/**
+	 * Calculates project counts for each region considering active impact category filter.
+	 * Cross-filters to show accurate counts when multiple filters are applied.
+	 */
 	let regionCounts = $derived(
 		regions.map((region) => ({
 			...region,
@@ -48,12 +79,18 @@
 		}))
 	);
 
-	// Get active filter count using $derived()
+	/**
+	 * Counts active filters for the "Clear all" button and badge display.
+	 */
 	let activeFilterCount = $derived(
 		[currentFilters.region, currentFilters.impactCategory].filter(Boolean).length
 	);
 
-	function toggleImpactCategory(category: string | null) {
+	/**
+	 * Toggles impact category filter selection.
+	 * Clicking the same category deselects it (null = all categories).
+	 */
+	function toggleImpactCategory(category: string | null): void {
 		if (currentFilters.impactCategory === category) {
 			filtersStore.setImpactCategory(null);
 		} else {
@@ -62,7 +99,11 @@
 		impactCategoryDropdownOpen = false;
 	}
 
-	function toggleRegion(region: string | null) {
+	/**
+	 * Toggles region filter selection.
+	 * Clicking the same region deselects it (null = all regions).
+	 */
+	function toggleRegion(region: string | null): void {
 		if (currentFilters.region === region) {
 			filtersStore.setRegion(null);
 		} else {
@@ -71,20 +112,30 @@
 		regionDropdownOpen = false;
 	}
 
-	function clearAllFilters() {
+	/**
+	 * Resets all active filters to their default state.
+	 */
+	function clearAllFilters(): void {
 		filtersStore.clear();
 	}
 
-	function handleKeydown(event: KeyboardEvent, callback: () => void) {
+	/**
+	 * Handles keyboard accessibility for dropdown options.
+	 * Supports Enter and Space keys for activation.
+	 */
+	function handleKeydown(event: KeyboardEvent, callback: () => void): void {
 		if (event.key === 'Enter' || event.key === ' ') {
 			event.preventDefault();
 			callback();
 		}
 	}
 
-	// Close dropdowns when clicking outside using $effect()
+	/**
+	 * Implements click-outside behavior to close open dropdowns.
+	 * Essential for good UX when users click away from filter controls.
+	 */
 	$effect(() => {
-		function handleClickOutside(event: Event) {
+		function handleClickOutside(event: Event): void {
 			const target = event.target as HTMLElement;
 			if (!target.closest('.dropdown-container')) {
 				impactCategoryDropdownOpen = false;

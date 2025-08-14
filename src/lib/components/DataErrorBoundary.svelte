@@ -1,9 +1,27 @@
+<!--
+	@fileoverview Data-specific error boundary that handles project data loading states.
+	Manages loading, error, and success states for the projects store, providing
+	user-friendly feedback and retry functionality when data fetching fails.
+	
+	@component DataErrorBoundary
+	@example
+	```svelte
+	<DataErrorBoundary>
+		{#snippet children()}
+			<MapContainer />
+			<ProjectModal />
+		{/snippet}
+	</DataErrorBoundary>
+	```
+-->
 <script lang="ts">
 	import { projectsStore } from '$lib/stores/projects.js';
 	import { onMount } from 'svelte';
+	import type { Snippet } from 'svelte';
 
 	interface Props {
-		children: any;
+		/** Child components that depend on project data */
+		children: Snippet;
 	}
 
 	let { children }: Props = $props();
@@ -12,7 +30,10 @@
 	let isLoading = $state(true);
 	let errorMessage = $state('');
 
-	// Check for data loading errors
+	/**
+	 * Monitors projects store for loading state changes and errors.
+	 * Automatically updates UI state based on data availability and error conditions.
+	 */
 	$effect(() => {
 		const store = $projectsStore;
 
@@ -21,24 +42,29 @@
 			errorMessage = store.error;
 			isLoading = false;
 		} else if (store.allProjects.length >= 0) {
-			// Data has been loaded (even if empty)
+			// Data loaded successfully, even if array is empty
 			hasDataError = false;
 			isLoading = false;
 		}
 	});
 
-	// Retry data loading
-	function retryDataLoad() {
+	/**
+	 * Resets error state and triggers a fresh data load attempt.
+	 * Provides users with recovery option when initial data fetch fails.
+	 */
+	function retryDataLoad(): void {
 		hasDataError = false;
 		isLoading = true;
 		errorMessage = '';
 
-		// Trigger data reload
 		projectsStore.loadProjects();
 	}
 
+	/**
+	 * Ensures projects are loaded on component mount.
+	 * Prevents unnecessary re-fetching if data already exists.
+	 */
 	onMount(() => {
-		// Initial load check
 		if ($projectsStore.allProjects.length === 0 && !$projectsStore.error) {
 			projectsStore.loadProjects();
 		}

@@ -1,80 +1,129 @@
 <script lang="ts">
 	import { selectedProjectStore } from '$lib/stores/selectedProject.js';
+	import type { Project } from '$lib/types';
+
+	/**
+	 * Map of impact categories to user-friendly display labels.
+	 * Must stay in sync with Project interface impact category values.
+	 */
+	const IMPACT_CATEGORY_LABELS = {
+		'renewable-energy': 'Renewable Energy',
+		conservation: 'Conservation',
+		'sustainable-agriculture': 'Sustainable Agriculture',
+		'waste-management': 'Waste Management'
+	} as const;
+
+	/**
+	 * Map of impact categories to Tailwind color classes for visual categorization.
+	 * Uses distinct colors to help users quickly identify project types.
+	 */
+	const IMPACT_CATEGORY_COLORS = {
+		'renewable-energy': 'bg-green-100 text-green-800',
+		conservation: 'bg-blue-100 text-blue-800',
+		'sustainable-agriculture': 'bg-amber-100 text-amber-800',
+		'waste-management': 'bg-purple-100 text-purple-800'
+	} as const;
+
+	/**
+	 * CSS selector for focusable elements within the modal.
+	 * Used for focus trapping and initial focus management.
+	 */
+	const FOCUSABLE_SELECTOR =
+		'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])' as const;
+
+	/**
+	 * Delay in milliseconds before focusing modal elements.
+	 * Ensures DOM is fully rendered before focus management.
+	 */
+	const FOCUS_DELAY = 100 as const;
 
 	let modalElement = $state<HTMLElement>();
 	let previouslyFocusedElement = $state<HTMLElement | null>(null);
 
-	// Derive values from store
 	let selectedProject = $derived($selectedProjectStore.selectedProject);
 	let isOpen = $derived($selectedProjectStore.isOpen);
 
-	// Handle escape key and backdrop clicks
-	function handleKeydown(event: KeyboardEvent) {
+	/**
+	 * Handles keyboard events for modal interaction.
+	 * Closes modal on Escape key for standard user experience.
+	 */
+	function handleKeydown(event: KeyboardEvent): void {
 		if (event.key === 'Escape' && isOpen) {
 			closeModal();
 		}
 	}
 
-	function handleBackdropClick(event: MouseEvent) {
+	/**
+	 * Handles backdrop clicks to close modal.
+	 * Only closes when clicking the backdrop itself, not modal content.
+	 */
+	function handleBackdropClick(event: MouseEvent): void {
 		if (event.target === event.currentTarget) {
 			closeModal();
 		}
 	}
 
-	function closeModal() {
+	/**
+	 * Closes the modal and restores focus to the previously focused element.
+	 * Essential for accessibility and smooth user experience.
+	 */
+	function closeModal(): void {
 		selectedProjectStore.closeModal();
 		restoreFocus();
 	}
 
-	function restoreFocus() {
+	/**
+	 * Restores focus to the element that was focused before modal opened.
+	 * Critical for screen reader users and keyboard navigation.
+	 */
+	function restoreFocus(): void {
 		if (previouslyFocusedElement) {
 			previouslyFocusedElement.focus();
 			previouslyFocusedElement = null;
 		}
 	}
 
-	function getImpactCategoryLabel(category: string): string {
-		const labels = {
-			'renewable-energy': 'Renewable Energy',
-			conservation: 'Conservation',
-			'sustainable-agriculture': 'Sustainable Agriculture',
-			'waste-management': 'Waste Management'
-		};
-		return labels[category as keyof typeof labels] || category;
+	/**
+	 * Converts impact category value to user-friendly display label.
+	 * Provides fallback for unknown categories to prevent breaking UI.
+	 */
+	function getImpactCategoryLabel(category: Project['impactCategory']): string {
+		return IMPACT_CATEGORY_LABELS[category] || category;
 	}
 
-	function getImpactCategoryColor(category: string): string {
-		const colors = {
-			'renewable-energy': 'bg-green-100 text-green-800',
-			conservation: 'bg-blue-100 text-blue-800',
-			'sustainable-agriculture': 'bg-amber-100 text-amber-800',
-			'waste-management': 'bg-purple-100 text-purple-800'
-		};
-		return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+	/**
+	 * Gets Tailwind color classes for impact category visual styling.
+	 * Provides neutral fallback for unknown categories.
+	 */
+	function getImpactCategoryColor(category: Project['impactCategory']): string {
+		return IMPACT_CATEGORY_COLORS[category] || 'bg-gray-100 text-gray-800';
 	}
 
-	// Focus management when modal opens
+	/**
+	 * Manages focus when modal opens for accessibility compliance.
+	 * Stores previous focus and moves focus to first interactive element.
+	 */
 	$effect(() => {
 		if (isOpen && modalElement) {
 			previouslyFocusedElement = document.activeElement as HTMLElement;
 
-			// Focus the modal after a brief delay to ensure it's rendered
 			setTimeout(() => {
 				if (!modalElement) return;
 
-				const firstFocusable = modalElement.querySelector(
-					'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-				) as HTMLElement;
+				const firstFocusable = modalElement.querySelector(FOCUSABLE_SELECTOR) as HTMLElement;
 				if (firstFocusable) {
 					firstFocusable.focus();
 				} else {
 					modalElement.focus();
 				}
-			}, 100);
+			}, FOCUS_DELAY);
 		}
 	});
 
-	// Prevent body scroll when modal is open and cleanup on destroy
+	/**
+	 * Prevents background scrolling when modal is open.
+	 * Maintains scroll position and restores on close for better UX.
+	 */
 	$effect(() => {
 		if (typeof window !== 'undefined') {
 			if (isOpen) {
@@ -84,7 +133,6 @@
 			}
 		}
 
-		// Cleanup function
 		return () => {
 			if (typeof window !== 'undefined') {
 				document.body.style.overflow = '';
@@ -92,6 +140,18 @@
 		};
 	});
 </script>
+
+<!--
+	@fileoverview Accessible modal dialog for displaying detailed climate project information.
+	Implements ARIA compliance, focus management, keyboard navigation, and scroll lock.
+	Features responsive design with mobile-optimized touch targets and smooth animations.
+	
+	@component ProjectModal
+	@example
+	```svelte
+	<ProjectModal />
+	<!-- Opens automatically when selectedProjectStore has a project -->
+``` -->
 
 <svelte:window onkeydown={handleKeydown} />
 
