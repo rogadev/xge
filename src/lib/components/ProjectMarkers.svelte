@@ -30,12 +30,28 @@
 	let filteredProjects = $derived($filteredProjectsStore);
 
 	/**
+	 * Reactive reference to map interaction state.
+	 * Used to hide markers during zoom/pan interactions.
+	 */
+	let isInteracting = $derived($mapStore.isInteracting);
+
+	/**
 	 * Effect that updates markers whenever filtered projects or map state changes.
 	 * Ensures markers are synchronized with current filter state and map availability.
 	 */
 	$effect(() => {
 		if ($mapStore.instance && $mapStore.isLoaded) {
 			updateMarkers(filteredProjects);
+		}
+	});
+
+	/**
+	 * Effect that handles marker visibility during map interactions.
+	 * Hides markers when user is zooming/panning, shows them when interaction stops.
+	 */
+	$effect(() => {
+		if ($mapStore.instance && $mapStore.isLoaded) {
+			setMarkersVisibility(!isInteracting);
 		}
 	});
 
@@ -164,6 +180,25 @@
 			'waste-management': '#8B5CF6' // Purple
 		};
 		return colors[impactCategory as keyof typeof colors] || '#6B7280'; // Default gray
+	}
+
+	/**
+	 * Sets the visibility of all markers on the map.
+	 * Used to hide markers during map interactions and show them when interactions end.
+	 *
+	 * @param visible - Whether markers should be visible
+	 */
+	function setMarkersVisibility(visible: boolean): void {
+		try {
+			markers.forEach((marker) => {
+				const element = marker.getElement();
+				if (element) {
+					element.style.display = visible ? 'block' : 'none';
+				}
+			});
+		} catch (error) {
+			console.error('Error setting marker visibility:', error);
+		}
 	}
 
 	/**

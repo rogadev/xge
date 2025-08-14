@@ -48,7 +48,8 @@ interface MapStore {
 const initialState: MapState = {
   instance: null,
   isLoaded: false,
-  error: null
+  error: null,
+  isInteracting: false
 } as const;
 
 /**
@@ -93,6 +94,17 @@ function createMapStore(): MapStore {
         ...state,
         error,
         isLoaded: false
+      }));
+    },
+
+    /**
+     * Sets the interaction state of the map.
+     * Called when user starts/stops zooming or panning.
+     */
+    setInteracting: (interacting: boolean): void => {
+      update(state => ({
+        ...state,
+        isInteracting: interacting
       }));
     },
 

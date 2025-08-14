@@ -146,6 +146,12 @@
 
 			map.on('load', handleMapLoad);
 			map.on('error', handleMapError);
+
+			// Map interaction events for marker visibility control
+			map.on('movestart', handleInteractionStart);
+			map.on('zoomstart', handleInteractionStart);
+			map.on('moveend', handleInteractionEnd);
+			map.on('zoomend', handleInteractionEnd);
 		}
 
 		/**
@@ -314,6 +320,22 @@
 			mapStore.setError(
 				'Map tiles are failing to load. Your Mapbox token may need additional permissions or URL restrictions updated.'
 			);
+		}
+
+		/**
+		 * Handles the start of map interactions (zoom or pan).
+		 * Sets interaction state to hide markers during movement.
+		 */
+		function handleInteractionStart(): void {
+			mapStore.setInteracting(true);
+		}
+
+		/**
+		 * Handles the end of map interactions (zoom or pan).
+		 * Clears interaction state to show markers after movement stops.
+		 */
+		function handleInteractionEnd(): void {
+			mapStore.setInteracting(false);
 		}
 
 		/**
