@@ -110,11 +110,11 @@
 		<!-- Modal content -->
 		<div
 			bind:this={modalElement}
-			class="relative max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-lg bg-white shadow-xl"
+			class="relative mx-4 max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-lg bg-white shadow-xl sm:mx-0"
 			tabindex="-1"
 		>
 			<!-- Header -->
-			<div class="flex items-start justify-between border-b border-gray-200 p-6">
+			<div class="flex items-start justify-between border-b border-gray-200 p-4 sm:p-6">
 				<div class="min-w-0 flex-1">
 					<h2 id="modal-title" class="pr-4 text-xl font-semibold text-gray-900">
 						{selectedProject.title}
@@ -161,7 +161,10 @@
 			</div>
 
 			<!-- Content -->
-			<div class="max-h-[60vh] overflow-y-auto p-6">
+			<div
+				class="max-h-[50vh] overflow-y-auto p-4 sm:max-h-[60vh] sm:p-6"
+				style="-webkit-overflow-scrolling: touch;"
+			>
 				<div id="modal-description" class="space-y-4">
 					<div>
 						<h3 class="mb-2 text-sm font-medium text-gray-900">Description</h3>
@@ -196,14 +199,16 @@
 			</div>
 
 			<!-- Footer -->
-			<div class="flex items-center justify-between border-t border-gray-200 bg-gray-50 p-6">
-				<div class="flex items-center space-x-4">
+			<div
+				class="flex flex-col items-center justify-between gap-3 border-t border-gray-200 bg-gray-50 p-4 sm:flex-row sm:gap-0 sm:p-6"
+			>
+				<div class="flex w-full items-center justify-center space-x-4 sm:w-auto sm:justify-start">
 					{#if selectedProject.url}
 						<a
 							href={selectedProject.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+							class="inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
 						>
 							<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path
@@ -219,7 +224,7 @@
 				</div>
 				<button
 					type="button"
-					class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+					class="min-h-[44px] w-full touch-manipulation rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
 					onclick={closeModal}
 				>
 					Close

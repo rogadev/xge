@@ -59,14 +59,16 @@
 				console.log('Token starts with pk.:', PUBLIC_MAPBOX_ACCESS_TOKEN?.startsWith('pk.'));
 				console.log('Attempting to load map with style: mapbox://styles/mapbox/light-v10');
 
-				// Initialize map with most compatible style
+				// Initialize map with enhanced mobile support
 				map = new mapboxgl.Map({
 					container: mapContainer!,
 					style: 'mapbox://styles/mapbox/light-v10', // Use basic style that should work
 					center: [-106.3468, 56.1304], // Center on Canada
 					zoom: 4,
+					maxZoom: 18,
+					minZoom: 2,
 					attributionControl: true,
-					// Enable smooth interactions
+					// Enhanced mobile interactions
 					doubleClickZoom: true,
 					dragPan: true,
 					dragRotate: false, // Disable rotation for better UX
@@ -78,8 +80,11 @@
 					fadeDuration: 300,
 					// Accessibility
 					keyboard: true,
-					// Touch gesture settings for mobile
-					cooperativeGestures: false // Allow single-finger pan
+					// Touch gesture settings optimized for mobile
+					cooperativeGestures: false, // Allow single-finger pan
+					// Better mobile viewport handling
+					preserveDrawingBuffer: false,
+					refreshExpiredTiles: true
 				});
 
 				// Handle map load event
@@ -87,17 +92,22 @@
 					clearTimeout(loadingTimeout);
 					isLoading = false;
 
-					// Add navigation controls
+					// Add responsive navigation controls
 					const nav = new mapboxgl.NavigationControl({
 						showCompass: false, // Hide compass for cleaner UI
 						showZoom: true,
 						visualizePitch: false
 					});
-					map!.addControl(nav, 'top-right');
 
-					// Add fullscreen control
-					const fullscreen = new mapboxgl.FullscreenControl();
-					map!.addControl(fullscreen, 'top-right');
+					// Position controls responsively
+					const isMobile = window.innerWidth < 768;
+					map!.addControl(nav, isMobile ? 'bottom-right' : 'top-right');
+
+					// Add fullscreen control (desktop only for better UX)
+					if (!isMobile) {
+						const fullscreen = new mapboxgl.FullscreenControl();
+						map!.addControl(fullscreen, 'top-right');
+					}
 
 					// Add smooth easing for better UX
 					map!.on('movestart', () => {
@@ -111,14 +121,23 @@
 					// Set initial cursor
 					map!.getCanvas().style.cursor = 'grab';
 
-					// Add keyboard navigation instructions for accessibility
-					map!.getCanvas().setAttribute('tabindex', '0');
-					map!
-						.getCanvas()
-						.setAttribute(
-							'aria-label',
-							'Interactive map. Use arrow keys to pan, plus and minus keys to zoom.'
-						);
+					// Enhanced accessibility and mobile support
+					const canvas = map!.getCanvas();
+					canvas.setAttribute('tabindex', '0');
+					canvas.setAttribute(
+						'aria-label',
+						'Interactive climate projects map. Use arrow keys to pan, plus and minus keys to zoom, or touch gestures on mobile.'
+					);
+
+					// Optimize touch events for mobile
+					canvas.style.touchAction = 'pan-x pan-y';
+
+					// Handle viewport changes for responsive behavior
+					const handleResize = () => {
+						map!.resize();
+					};
+					window.addEventListener('resize', handleResize);
+					window.addEventListener('orientationchange', handleResize);
 
 					// Update store
 					mapStore.setInstance(map!);

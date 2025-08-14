@@ -99,7 +99,9 @@
 	});
 </script>
 
-<div class="absolute top-4 left-4 z-10 max-w-md rounded-lg bg-white p-4 shadow-lg">
+<div
+	class="w-full max-w-md rounded-lg border border-gray-200 bg-white p-3 shadow-lg backdrop-blur-sm sm:p-4 lg:max-w-sm"
+>
 	<div class="space-y-4">
 		<!-- Header -->
 		<div class="flex items-center justify-between">
@@ -297,15 +299,21 @@
 	</div>
 </div>
 
-<!-- Mobile responsive adjustments -->
+<!-- Enhanced mobile responsive styles -->
 <style>
-	@media (max-width: 640px) {
-		.absolute {
-			position: fixed;
-			top: 1rem;
-			left: 1rem;
-			right: 1rem;
-			max-width: none;
+	/* Touch-friendly interactive elements */
+	@media (max-width: 768px) {
+		:global(.dropdown-container button) {
+			min-height: 44px; /* Touch target size */
 		}
+
+		:global(.dropdown-container .ring-opacity-5) {
+			max-height: 50vh; /* Prevent dropdowns from being too tall on mobile */
+		}
+	}
+
+	/* Improve touch scrolling */
+	:global(.dropdown-container .overflow-auto) {
+		-webkit-overflow-scrolling: touch;
 	}
 </style>

@@ -1,6 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import type { Project } from '../types/index.js';
 import { projects } from '../data/projects.js';
+import { handleError } from '../utils/errors.js';
 
 interface FilterState {
   region: string | null;
@@ -10,14 +11,20 @@ interface FilterState {
 interface ProjectsState {
   allProjects: Project[];
   filters: FilterState;
+  isLoading: boolean;
+  error: string | null;
+  lastUpdated: Date | null;
 }
 
 const initialState: ProjectsState = {
-  allProjects: projects,
+  allProjects: [],
   filters: {
     region: null,
     impactCategory: null
-  }
+  },
+  isLoading: false,
+  error: null,
+  lastUpdated: null
 };
 
 function createProjectsStore() {
@@ -46,6 +53,50 @@ function createProjectsStore() {
   return {
     subscribe,
     filteredProjects,
+
+    // Data loading methods
+    loadProjects: async () => {
+      try {
+        update(state => ({ ...state, isLoading: true, error: null }));
+
+        // Simulate async loading (replace with actual API call if needed)
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Validate projects data
+        if (!Array.isArray(projects)) {
+          throw new Error('Invalid projects data format');
+        }
+
+        // Validate each project
+        const validProjects = projects.filter(project => {
+          if (!project.id || !project.title || !project.coordinates) {
+            console.warn('Skipping invalid project:', project);
+            return false;
+          }
+          return true;
+        });
+
+        update(state => ({
+          ...state,
+          allProjects: validProjects,
+          isLoading: false,
+          error: null,
+          lastUpdated: new Date()
+        }));
+
+      } catch (error) {
+        const errorInfo = handleError(error, 'Projects Loading');
+        update(state => ({
+          ...state,
+          allProjects: [],
+          isLoading: false,
+          error: errorInfo.message,
+          lastUpdated: null
+        }));
+      }
+    },
+
+    // Filter methods
     updateFilters: (filters: FilterState) => {
       update(state => ({
         ...state,
@@ -78,6 +129,11 @@ function createProjectsStore() {
           impactCategory: null
         }
       }));
+    },
+
+    // Utility methods
+    clearError: () => {
+      update(state => ({ ...state, error: null }));
     },
     reset: () => {
       set(initialState);
