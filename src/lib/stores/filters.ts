@@ -43,8 +43,11 @@ function createFiltersStore() {
       });
     },
     clear: () => {
-      const newState = { ...initialState };
-      debouncedUpdate(newState);
+      update(state => {
+        const newState = { ...initialState };
+        debouncedUpdate(newState);
+        return newState;
+      });
     },
     reset: () => {
       set(initialState);

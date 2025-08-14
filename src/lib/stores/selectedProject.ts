@@ -2,13 +2,13 @@ import { writable } from 'svelte/store';
 import type { Project } from '../types/index.js';
 
 interface SelectedProjectState {
-  project: Project | null;
+  selectedProject: Project | null;
   isOpen: boolean;
   previousFocusElement: HTMLElement | null;
 }
 
 const initialState: SelectedProjectState = {
-  project: null,
+  selectedProject: null,
   isOpen: false,
   previousFocusElement: null
 };
@@ -18,18 +18,18 @@ function createSelectedProjectStore() {
 
   return {
     subscribe,
-    select: (project: Project) => {
+    selectProject: (project: Project) => {
       // Store the currently focused element for focus restoration
       const previousFocusElement = document.activeElement as HTMLElement;
 
       update(state => ({
         ...state,
-        project,
+        selectedProject: project,
         isOpen: true,
         previousFocusElement
       }));
     },
-    close: () => {
+    closeModal: () => {
       update(state => {
         // Restore focus to the previously focused element
         if (state.previousFocusElement) {
@@ -41,7 +41,7 @@ function createSelectedProjectStore() {
 
         return {
           ...state,
-          project: null,
+          selectedProject: null,
           isOpen: false,
           previousFocusElement: null
         };

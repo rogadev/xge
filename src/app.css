@@ -1,2 +1,13 @@
 @import 'tailwindcss';
 @import 'mapbox-gl/dist/mapbox-gl.css';
+
+/* Custom marker styles for Mapbox markers */
+.marker-custom {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.marker-custom:focus {
+	outline: none;
+}

@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { MapContainer } from '$lib/components';
+	import { MapContainer, ProjectMarkers, ProjectModal, FilterControls } from '$lib/components';
 </script>
 
-<MapContainer />
+<div class="relative h-screen w-full">
+	<MapContainer />
+	<ProjectMarkers />
+	<FilterControls />
+	<ProjectModal />
+</div>
