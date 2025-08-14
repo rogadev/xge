@@ -1,5 +1,5 @@
 /**
- * @fileoverview Utility functions barrel export for the XGE Climate Explorer.
+ * @fileoverview Utility functions barrel export for the XGE Project Explorer.
  * Provides centralized access to all utility functions including validation,
  * error handling, data formatting, and performance optimization utilities.
  * 

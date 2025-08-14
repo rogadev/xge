@@ -1,5 +1,5 @@
 /**
- * @fileoverview Comprehensive validation utilities for climate project data in the XGE Climate Explorer.
+ * @fileoverview Comprehensive validation utilities for climate project data in the XGE Project Explorer.
  * 
  * This module provides enterprise-grade validation for project objects to ensure data integrity
  * and business rule compliance before processing. Features include individual project validation,
@@ -9,7 +9,7 @@
  * The validation system implements a defensive programming approach where invalid data
  * is caught early with descriptive error messages to aid debugging and data quality assurance.
  * 
- * @author XGE Climate Explorer Team
+ * @author XGE Project Explorer Team
  * @version 1.0.0
  */
 
@@ -515,7 +515,7 @@ export function safeParseProjects(data: unknown): Project[] {
 
 /**
  * Validation utility exports for easy access and testing.
- * Provides a comprehensive validation toolkit for the XGE Climate Explorer.
+ * Provides a comprehensive validation toolkit for the XGE Project Explorer.
  */
 export const ValidationUtils = {
   /** Core validation functions */

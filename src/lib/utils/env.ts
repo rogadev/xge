@@ -1,5 +1,5 @@
 /**
- * Environment variable utilities for the XGE Climate Explorer
+ * Environment variable utilities for the XGE Project Explorer
  */
 
 import { PUBLIC_MAPBOX_ACCESS_TOKEN } from '$env/static/public';

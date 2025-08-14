@@ -1,5 +1,5 @@
 <!--
-	@fileoverview Main page component for the XGE Climate Explorer application.
+	@fileoverview Main page component for the XGE Project Explorer application.
 	Orchestrates the complete climate project mapping experience with layered error boundaries,
 	responsive layout, and accessibility features. Implements a defensive architecture
 	where individual component failures don't break the entire application.

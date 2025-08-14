@@ -1,5 +1,5 @@
 /**
- * @fileoverview Main library barrel export for the XGE Climate Explorer application.
+ * @fileoverview Main library barrel export for the XGE Project Explorer application.
  * Provides centralized access to all core functionality including types, components,
  * stores, data, and utilities. Follows the barrel export pattern for clean imports
  * and better developer experience throughout the application.
@@ -30,7 +30,7 @@ export * from './types/index.js';
 
 /* ===== SVELTE COMPONENTS ===== */
 /**
- * All Svelte components for the climate explorer interface.
+ * All Svelte components for the project explorer interface.
  * Includes map components, UI controls, modals, and error boundaries.
  */
 export * from './components/index.js';
